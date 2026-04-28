@@ -1,0 +1,87 @@
+name: Build Installers
+
+on:
+  push:
+    branches: [main]
+    tags: ["v*"]
+  workflow_dispatch:
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pyinstaller pillow PyQt6 pyqtgraph sounddevice numpy scipy
+      - name: Generate icons
+        run: python tools/make_icon.py
+      - name: Build with PyInstaller
+        run: pyinstaller --noconfirm spectrogram_viz.spec
+      - name: Build Inno Setup installer
+        run: |
+          $iscc = "C:\Program Files (x86)\Inno Setup 6\ISCC.exe"
+          if (-not (Test-Path $iscc)) { choco install innosetup -y }
+          & "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" installer\installer.iss
+      - name: Upload Windows installer
+        uses: actions/upload-artifact@v4
+        with:
+          name: SpectrogramViz-Windows-Setup
+          path: installer/Output/*.exe
+
+  build-macos:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pyinstaller pillow PyQt6 pyqtgraph sounddevice numpy scipy
+          brew install create-dmg || true
+      - name: Generate icons
+        run: python tools/make_icon.py
+      - name: Build with PyInstaller
+        run: pyinstaller --noconfirm spectrogram_viz.spec
+      - name: Build .dmg
+        run: |
+          mkdir -p installer/Output
+          create-dmg \
+            --volname "Spectrogram Viz" \
+            --window-size 540 360 \
+            --icon-size 96 \
+            --app-drop-link 380 180 \
+            --icon "SpectrogramViz.app" 140 180 \
+            "installer/Output/SpectrogramViz-macOS.dmg" \
+            "dist/SpectrogramViz.app" || \
+          (cd dist && zip -r ../installer/Output/SpectrogramViz-macOS.zip SpectrogramViz.app)
+      - name: Upload macOS artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: SpectrogramViz-macOS
+          path: installer/Output/*
+
+  release:
+    needs: [build-windows, build-macos]
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with: { path: dist }
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            dist/SpectrogramViz-Windows-Setup/*
+            dist/SpectrogramViz-macOS/*
+          generate_release_notes: true
