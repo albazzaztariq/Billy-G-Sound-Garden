@@ -49,6 +49,19 @@ create-dmg --volname "Spectrogram Viz" --app-drop-link 380 180 \
 
 Pushes to `main` build artifacts via GitHub Actions for both Windows and macOS. Tagging `v*` cuts a Release with the installers attached.
 
+## Roadmap / Ideas
+
+- [x] **Real-time Spectrogram Visualization** — Use Python (with numpy and scipy) to analyze incoming audio from an interface and display a live FFT spectrum, useful for identifying resonant frequencies.
+- [ ] **Sound Activated Recorder** — A Python-based project using PyAudio to create an automated recording script that starts recording only when audio surpasses a certain dB threshold, useful for live recordings.
+- [ ] **Audio Source Separation Tool** — Use libraries like spleeter or nussl in Python to create a tool that separates a master recording into drums, bass, vocals, and other components for remixing.
+- [ ] **Real-time Guitar Pedal** — Implement an equalizer or delay effect. Clip audio files.
+- [ ] **Custom Waveshaper / Distortion Plugin** — An effect where the user can interactively draw or modify the wave-shaping curve to create unique saturation.
+- [ ] **Polyphonic Synthesizer** — A synth with multiple oscillators (sine, square, saw, noise), filter, and ADSR envelope.
+- [ ] **"Vintage" Processor** — A plugin that applies a vintage effect, simulating old radio or vinyl characteristics, using a combination of bandpass filtering and intentional noise/distortion.
+- [ ] **MIDI Arpeggiator** — A program that takes MIDI input and outputs a customizable arpeggio pattern. Standalone application to feed into a DAW or as a plugin.
+- [ ] **Intelligent Drum Humanizer** — A MIDI tool that takes rigid MIDI drum tracks and applies velocity/timing adjustments based on real drummer techniques (e.g., slightly ahead of the beat, harder velocity on stronger bars).
+- [ ] **OSC Control Interface** — A GUI (using Python or JUCE) that sends Open Sound Control (OSC) messages to control hardware digital mixers or software like Ableton Live.
+
 ## License
 
 MIT
